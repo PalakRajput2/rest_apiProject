@@ -1,0 +1,18 @@
+// REST API -- to support JSON data
+
+GET /users - HTML document render
+GET /api/users    - List all users as JSON
+
+
+Dynamic Path Parameter 
+GET /api/users/:id 
+:id ---> The id is variable and n numbers of id's are there 
+
+GET /api/users/1  - Get the user with ID-1
+GET /api/users/2  - Get the user with ID-2
+
+POST /api/users   - Create a new user
+
+PATCH /api/users/1 - Edit the user with Id
+
+DELETE /api/users/1  - Delete the user with id 1
