@@ -23,7 +23,10 @@ app.get("/users", (req, res) => {
 
 // REST API  various http methods
 app.get("/api/users", (req, res) => {
+  res.setHeader("X-MyName","Palak");   //custom header , x represents it is a custom header
+  console.log(req.headers);
   return res.json({ users });
+
 });
 
 app
