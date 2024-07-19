@@ -7,6 +7,11 @@ const PORT = 8000;
 //Middleware
 app.use(express.urlencoded({ extended: "false" }));
 
+app.use((req,res,next)=>{
+  fs.appendFile("log.txt",`\n${Date.now()}:${req.ip}:${req.method}`,(err,data)=>{
+    next();
+  })
+})
 app.get("/users", (req, res) => {
   const html = `
     <ul>
@@ -16,7 +21,7 @@ app.get("/users", (req, res) => {
   res.send(html);
 });
 
-// REST API
+// REST API  various http methods
 app.get("/api/users", (req, res) => {
   return res.json({ users });
 });
@@ -59,12 +64,17 @@ app
   });
 
 
-app.post("/api/users", (req, res) => {
-  const body = req.body;
-  users.push({ id: users.length + 1, ...body });
-  fs.writeFile("./MOCK_DATA.json", JSON.stringify(users), (err, data) => {
-    return res.json({ status: "sucess", id: users.length });
-  });
+  app.post('/api/users', (req, res) => {
+    const body = req.body;
+    users.push({ ...body, id: users.length + 1 });
+
+    fs.writeFile('./MOCK_DATA.json', JSON.stringify(users), (err, data) => {
+        if (err) {
+            return res.status(500).json({ message: "Failed to write to file" });
+        } else {
+            return res.json({ message: "Pass!" });
+        }
+    });
 });
 
 app.listen(PORT, () => {
