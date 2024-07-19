@@ -1,48 +1,72 @@
-const express = require('express');
+const express = require("express");
+const fs = require("fs");
 const users = require("./MOCK_DATA.json");
 const app = express();
 const PORT = 8000;
 
+//Middleware
+app.use(express.urlencoded({ extended: "false" }));
+
 app.get("/users", (req, res) => {
-    const html = `
+  const html = `
     <ul>
-      ${users.map(user => `<li>${user.first_name}</li>`).join('')}
+      ${users.map((user) => `<li>${user.first_name}</li>`).join("")}
     </ul>
   `;
-    res.send(html);
+  res.send(html);
 });
 
 // REST API
 app.get("/api/users", (req, res) => {
-    return res.json({ users });
+  return res.json({ users });
 });
 
-app.route("/api/users/:id")
-        .get ((req, res) => {
-            const id = Number(req.params.id);
-            const user = users.find((user) => user.id === id);
-            if (user) {
-                return res.json({ user });
-            } else {
-                return res.status(404).json({ error: "User not found" });
-            }
-        })
-        .delete( (req, res) => {
-            //TODO : delete the user with id 
-            return res.json({ status :"pending" });
-        })
-        .patch( (req, res) => {
-            //TODO : edit the user with id 
-            return res.json({ status :"pending" });
-        });
+app
+  .route("/api/users/:id")
+  .get((req, res) => {
+    const id = Number(req.params.id);
+    const user = users.find((user) => user.id === id);
+    if (user) {
+      return res.json({ user });
+    } else {
+      return res.status(404).json({ error: "User not found" });
+    }
+  })
+  .delete((req, res) => {
+    const id = Number(req.params.id);
+    const usersToDel = users.filter((user) => user.id !== id);
+    fs.writeFile("MOCK_DATA.json", JSON.stringify(usersToDel), (err, data) => {
+      return res.json({ status: "Success", id });
+    });
+  })
+  .patch((req, res) => {
+    const id = Number(req.params.id);
+    const userIndex = users.findIndex((user) => user.id === id);
+
+    if (userIndex !== -1) {
+      const updatedUser = { ...users[userIndex], ...req.body };
+      users[userIndex] = updatedUser;
+
+      fs.writeFile("MOCK_DATA.json", JSON.stringify(users), (err) => {
+        if (err) {
+          return res.status(500).json({ error: "Failed to update user" });
+        }
+        return res.json({ status: "Success", user: updatedUser });
+      });
+    } else {
+      return res.status(404).json({ error: "User not found" });
+    }
+  });
+
 
 app.post("/api/users", (req, res) => {
-    //  todo : create a new user the status  is pending 
-    return res.json({ status :"pending"});
+  const body = req.body;
+  users.push({ id: users.length + 1, ...body });
+  fs.writeFile("./MOCK_DATA.json", JSON.stringify(users), (err, data) => {
+    return res.json({ status: "sucess", id: users.length });
+  });
 });
 
-
-
 app.listen(PORT, () => {
-    console.log(`Server started at Port : ${PORT}`);
+  console.log(`Server started at Port : ${PORT}`);
 });
