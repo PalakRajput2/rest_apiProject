@@ -34,9 +34,11 @@ app
   .get((req, res) => {
     const id = Number(req.params.id);
     const user = users.find((user) => user.id === id);
+    
     if (user) {
       return res.json({ user });
     } else {
+      //status code 404 not found
       return res.status(404).json({ error: "User not found" });
     }
   })
@@ -69,13 +71,18 @@ app
 
   app.post('/api/users', (req, res) => {
     const body = req.body;
+    if(!body || !body.first_name || !body.last_name || !body.email || !body.gender || !body.job_title){
+      return res.status(400).json({msg :"All fields are required...Must fill it "});
+    }
     users.push({ ...body, id: users.length + 1 });
 
     fs.writeFile('./MOCK_DATA.json', JSON.stringify(users), (err, data) => {
         if (err) {
+          //status code 500 for Internal server error
             return res.status(500).json({ message: "Failed to write to file" });
         } else {
-            return res.json({ message: "Pass!" });
+           //status code 201 for http request created
+            return res.status(201).json({ message: "Pass!" , id: users.length});
         }
     });
 });
